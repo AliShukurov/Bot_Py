@@ -14,9 +14,12 @@ bot = Bot(token=API_KEY)
 dp = Dispatcher(bot, storage=storage)
 
 class FillInfo(StatesGroup):
-    waiting_for_course = State()
-    waiting_for_faculty = State()
-    waiting_for_group = State()
+    waiting_for_monday = State()
+    waiting_for_tuesday = State()
+    waiting_for_wednesday = State()
+    waiting_for_thursday = State()
+    waiting_for_friday = State()
+    waiting_for_saturday = State()
 
 
 
@@ -31,37 +34,58 @@ async def process_callback_button1(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
     await bot.send_message(callback_query.from_user.id, 'Чтобы коректно заполнить сделайт так, как указано на примере снизу\nтутутут', reply_markup=kb.inline_kb2)
 
+
+
 #Заполнение расписания по дням 
 @dp.callback_query_handler(lambda c: c.data == 'button2')
 async def process_callback_button1(callback_query: types.CallbackQuery):
     await bot.answer_callback_query(callback_query.id)
-    await bot.send_message(callback_query.from_user.id, 'Введите курс')
-    await FillInfo.waiting_for_course.set()
+    await bot.send_message(callback_query.from_user.id, 'Заполните для понедельника:')
+    await FillInfo.waiting_for_monday.set()
 
-@dp.message_handler(state=FillInfo.waiting_for_course, content_types=types.ContentTypes.TEXT)
-async def fill_faculty(message: types.Message, state: FSMContext):
-    await state.update_data(chosen_course=message.text.lower())
+@dp.message_handler(state=FillInfo.waiting_for_monday, content_types=types.ContentTypes.TEXT)
+async def fill_2(message: types.Message, state: FSMContext):
+    await state.update_data(chosen_monday=message.text.lower())
     await FillInfo.next()
-    await message.answer("Теперь введите факультет")
+    await message.answer("Заполните для вторника:")
 
-
-@dp.message_handler(state=FillInfo.waiting_for_faculty, content_types=types.ContentTypes.TEXT)
-async def fil_group(message: types.Message, state: FSMContext):
-    await state.update_data(chosen_faculty=message.text)
+@dp.message_handler(state=FillInfo.waiting_for_tuesday, content_types=types.ContentTypes.TEXT)
+async def fill_3(message: types.Message, state: FSMContext):
+    await state.update_data(chosen_tuesday=message.text.upper())
     await FillInfo.next()
-    await message.answer("Теперь введите номер группы")
+    await message.answer("Заполните для среды:")
+
+@dp.message_handler(state=FillInfo.waiting_for_wednesday, content_types=types.ContentTypes.TEXT)
+async def fill_4(message: types.Message, state: FSMContext):
+    await state.update_data(chosen_wednesday=message.text.lower())
+    await FillInfo.next()
+    await message.answer("Заполните для четверга:")    
+
+@dp.message_handler(state=FillInfo.waiting_for_thursday, content_types=types.ContentTypes.TEXT)
+async def fill_5(message: types.Message, state: FSMContext):
+    await state.update_data(chosen_thursday=message.text.upper())
+    await FillInfo.next()
+    await message.answer("Заполните для пятницы:")
+
+@dp.message_handler(state=FillInfo.waiting_for_friday, content_types=types.ContentTypes.TEXT)
+async def fill_6(message: types.Message, state: FSMContext):
+    await state.update_data(chosen_friday=message.text.lower())
+    await FillInfo.next()
+    await message.answer("Заполните для субботы:")
 
 
-@dp.message_handler(state=FillInfo.waiting_for_group, content_types=types.ContentTypes.TEXT)
+@dp.message_handler(state=FillInfo.waiting_for_saturday, content_types=types.ContentTypes.TEXT)
 async def show_info(message: types.Message, state: FSMContext):
-    await state.update_data(chosen_group=message.text.lower())
+    await state.update_data(chosen_saturday=message.text.lower())
     user_data = await state.get_data()
-    await message.answer(f"Вы студент {user_data['chosen_course']}-ого курса, учитесь на факультете {user_data['chosen_faculty']}\n"
-                         f"В группе {user_data['chosen_group']}")
+    await message.answer(f"Расписание на неделю:\n    \n"
+                         f"Понедельник:\n{user_data['chosen_monday']}\n   \n" 
+                         f"Вторник:\n{user_data['chosen_tuesday']}\n     \n"
+                         f"Среда:\n{user_data['chosen_wednesday']}\n      \n"
+                         f"Четверг:\n{user_data['chosen_thursday']}\n      \n"
+                         f"Пятница:\n{user_data['chosen_friday']}\n      \n"
+                         f"Пятница:\n{user_data['chosen_saturday']}\n      \n")
     await state.finish()
-
-
-
 
 
 
